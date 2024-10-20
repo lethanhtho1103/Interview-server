@@ -6,11 +6,4 @@ const userMiddleware = require("../middlewares/userMiddleware");
 // GET ALL USERS
 router.get("/", userMiddleware.verifyToken, userController.getAllUsers);
 
-// DELETE USER
-router.delete(
-  "/:id",
-  userMiddleware.verifyUserAndAdminToken,
-  userController.deleteUser
-);
-
 module.exports = router;

@@ -6,7 +6,7 @@ const crypto = require("crypto");
 const validator = require("validator");
 
 let refreshTokens = [];
-let otps = {}; // Lưu trữ OTP và thời gian hết hạn tạm thời
+let otps = {};
 
 const transporter = nodemailer.createTransport({
   service: "gmail",
@@ -146,11 +146,13 @@ const AuthController = {
       const refreshToken = AuthController.generateRefreshToken(user);
       refreshTokens.push(refreshToken);
 
-      res.cookie("refresh_token", refreshToken, {
-        httpOnly: true,
-        secure: true,
-        path: "/",
-      });
+      // res.cookie("refresh_token", refreshToken, {
+      //   httpOnly: true,
+      //   secure: false,
+      //   sameSite: "None",
+      //   path: "/",
+      //   maxAge: 7 * 24 * 60 * 60 * 1000, // Cookie tồn tại trong 7 ngày
+      // });
 
       const { password, ...props } = user._doc;
       return res.status(200).json({ props, accessToken, refreshToken });
@@ -161,12 +163,13 @@ const AuthController = {
 
   requestRefreshToken: (req, res) => {
     const refreshToken = req.cookies.refresh_token;
+    console.log(`Refresh token: ${refreshToken}`);
     if (!refreshToken) {
       return res.status(403).json({ message: "You're not authenticated." });
     }
-    if (!refreshTokens.includes(refreshToken)) {
-      return res.status(403).json({ message: "Refresh Token is not valid." });
-    }
+    // if (!refreshTokens.includes(refreshToken)) {
+    //   return res.status(403).json({ message: "Refresh Token is not valid." });
+    // }
     jwt.verify(refreshToken, process.env.JWT_REFRESH_TOKEN, (err, user) => {
       if (err) {
         return res.status(403).json({ message: "Token is not valid." });
@@ -174,25 +177,21 @@ const AuthController = {
       refreshTokens = refreshTokens.filter(
         (token) => token !== req.cookies.refresh_token
       );
-      // Create new accessToken and refreshToken
+
       const newAccessToken = AuthController.generateAccessToken(user);
       const newRefreshToken = AuthController.generateRefreshToken(user);
       refreshTokens.push(newRefreshToken);
-      res.cookie("refresh_token", newRefreshToken, {
-        httpOnly: true,
-        secure: false,
-        path: "/",
-      });
-      res.status(200).json({ accessToken: newAccessToken });
-    });
-  },
 
-  logoutUser: (req, res) => {
-    res.clearCookie("refresh_token");
-    refreshTokens = refreshTokens.filter(
-      (token) => token !== req.cookies.refresh_token
-    );
-    res.status(200).json({ message: "Log out successfully." });
+      // res.cookie("refresh_token", newRefreshToken, {
+      //   httpOnly: true,
+      //   secure: false,
+      //   path: "/",
+      //   sameSite: "None",
+      // });
+      res
+        .status(200)
+        .json({ accessToken: newAccessToken, refreshToken: newRefreshToken });
+    });
   },
 };
 

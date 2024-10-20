@@ -10,8 +10,12 @@ const app = express();
 
 const PORT = process.env.PORT || 8082;
 db.connect();
-
-app.use(cors());
+app.use(
+  cors({
+    origin: "http://localhost:8080", // Đảm bảo đúng cổng của frontend
+    credentials: true, // Cho phép gửi cookie qua cross-origin
+  })
+);
 app.use(cookieParser());
 app.use(express.json());
 

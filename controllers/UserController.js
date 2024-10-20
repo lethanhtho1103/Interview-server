@@ -9,15 +9,6 @@ class UserController {
       res.status(500).json(error);
     }
   }
-
-  async deleteUser(req, res, next) {
-    try {
-      await User.findById(req.params.id);
-      res.status(200).json("delete successfully");
-    } catch (error) {
-      res.status(500).json(error);
-    }
-  }
 }
 
 module.exports = new UserController();
