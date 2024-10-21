@@ -73,7 +73,7 @@ const AuthController = {
     try {
       const user = await User.findOne({ email: req.body.email });
       if (!user) {
-        return res.status(403).json({ message: "Invalid username." });
+        return res.status(403).json({ message: "Invalid email." });
       }
 
       const validPassword = await bcrypt.compare(
@@ -163,7 +163,6 @@ const AuthController = {
 
   requestRefreshToken: (req, res) => {
     const refreshToken = req.cookies.refresh_token;
-    console.log(`Refresh token: ${refreshToken}`);
     if (!refreshToken) {
       return res.status(403).json({ message: "You're not authenticated." });
     }
@@ -188,9 +187,7 @@ const AuthController = {
       //   path: "/",
       //   sameSite: "None",
       // });
-      res
-        .status(200)
-        .json({ accessToken: newAccessToken, refreshToken: newRefreshToken });
+      res.status(200).json({ accessToken: newAccessToken });
     });
   },
 };
